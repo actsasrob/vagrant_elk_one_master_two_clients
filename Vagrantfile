@@ -19,7 +19,6 @@ $ubuntu_client_setupscript = <<END
   chmod 644 /etc/pki/tls/certs/logstash-forwarder.crt
   chown root:root /etc/pki/tls/certs/logstash-forwarder.crt
 
-  FILEBEATVERSION=5.4.0
   echo "info: Install filebeat version ${FILEBEATVERSION}..."
 
   if [ ! -f /etc/filebeat/filebeat.yml ]; then
@@ -78,7 +77,6 @@ $centos_client_setupscript = <<END
   chmod 644 /etc/pki/tls/certs/logstash-forwarder.crt
   chown root:root /etc/pki/tls/certs/logstash-forwarder.crt
 
-  FILEBEATVERSION=5.4.0
   echo "info: Install filebeat version ${FILEBEATVERSION}..."
 
   if [ ! -f /etc/filebeat/filebeat.yml ]; then
@@ -163,7 +161,6 @@ $centos_master_setupscript = <<END
   fi
   java -version
 
-  ELASTICSEARCHVERSION=5.4.0
   echo "info: Install elasticsearch version ${ELASTICSEARCHVERSION}..."
 
   if [ ! -f /usr/share/elasticsearch/bin/elasticsearch ]; then
@@ -212,10 +209,9 @@ $centos_master_setupscript = <<END
 
   echo
   echo "info: Install and Configure Kibana with Nginx"
-  KIBANA_VERSION=5.4.0
   if [ ! -f /etc/kibana/kibana.yml ]; then  
-     wget --quiet https://artifacts.elastic.co/downloads/kibana/kibana-${KIBANA_VERSION}-x86_64.rpm
-     rpm -ivh kibana-${KIBANA_VERSION}-x86_64.rpm
+     wget --quiet https://artifacts.elastic.co/downloads/kibana/kibana-${KIBANAVERSION}-x86_64.rpm
+     rpm -ivh kibana-${KIBANAVERSION}-x86_64.rpm
   else
      echo "info: kibana already installed"
   fi
@@ -272,11 +268,10 @@ EOF
   systemctl enable nginx
   systemctl start nginx
 
-  LOGSTASH_VERSION=5.4.0
   echo "info:  Install and Configure Logstash"
   if [ ! -f /etc/logstash/logstash.yml ]; then
-     wget --quiet https://artifacts.elastic.co/downloads/logstash/logstash-${LOGSTASH_VERSION}.rpm
-     rpm -ivh logstash-${LOGSTASH_VERSION}.rpm
+     wget --quiet https://artifacts.elastic.co/downloads/logstash/logstash-${LOGSTASHVERSION}.rpm
+     rpm -ivh logstash-${LOGSTASHVERSION}.rpm
   else
      echo "info: logstash already installed"
   fi
@@ -367,7 +362,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        vb.memory = 4096
        vb.cpus = 2
     end
-    master.vm.provision "shell", inline: $centos_master_setupscript
+    master.vm.provision "shell", inline: $centos_master_setupscript, env: {"FILEBEATVERSION"=>"5.4.0", "ELASTICSEARCHVERSION"=>"5.4.0", "LOGSTASHVERSION"=>"5.4.0", "KIBANAVERSION"=>"5.4.0"}
+
   end
 
   # Configure the CentOS7 client
@@ -379,7 +375,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        vb.memory = 1024
        vb.cpus = 2
     end
-    client1.vm.provision "shell", inline: $centos_client_setupscript
+    client1.vm.provision "shell", inline: $centos_client_setupscript, env: {"FILEBEATVERSION"=>"5.4.0", "ELASTICSEARCHVERSION"=>"5.4.0", "LOGSTASHVERSION"=>"5.4.0", "KIBANAVERSION"=>"5.4.0"}
+
   end
 
   # Configure the Ubuntu 16.04 client
@@ -391,7 +388,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        vb.memory = 1024
        vb.cpus = 2
     end
-    client2.vm.provision "shell", inline: $ubuntu_client_setupscript
+    client2.vm.provision "shell", inline: $ubuntu_client_setupscript, env: {"FILEBEATVERSION"=>"5.4.0", "ELASTICSEARCHVERSION"=>"5.4.0", "LOGSTASHVERSION"=>"5.4.0", "KIBANAVERSION"=>"5.4.0"}
   end
 
 end
