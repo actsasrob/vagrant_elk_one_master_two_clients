@@ -1,9 +1,10 @@
 # vagrant_elk_one_master_two_clients
-ELK v5.4.0 stack. Single master (CentOS7) and two clients (CentOS7 and Ubuntu 16.04).
+ELK v6.x.x stack. Single master (CentOS7) and two clients (CentOS7 and Ubuntu 16.04).
 
 ## Credit to HowToForge
    Follows the recipe here: https://www.howtoforge.com/tutorial/how-to-install-elastic-stack-on-centos-7/  
-   But uses ELK v5.4.0 instead of v5.1.1
+   NOTE: The master branch has been updated for ELK v6.2.x  
+         Use branch elk_v540 for ELK v5.4.0
 
 ## Setup instructions:
 To use this project:

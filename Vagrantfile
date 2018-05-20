@@ -362,7 +362,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        vb.memory = 4096
        vb.cpus = 2
     end
-    master.vm.provision "shell", inline: $centos_master_setupscript, env: {"FILEBEATVERSION"=>"5.4.0", "ELASTICSEARCHVERSION"=>"5.4.0", "LOGSTASHVERSION"=>"5.4.0", "KIBANAVERSION"=>"5.4.0"}
+    master.vm.provision "shell", inline: $centos_master_setupscript, env: {"FILEBEATVERSION"=>"6.2.1", "ELASTICSEARCHVERSION"=>"6.2.1", "LOGSTASHVERSION"=>"6.2.1", "KIBANAVERSION"=>"6.2.1"}
 
   end
 
@@ -375,7 +375,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        vb.memory = 1024
        vb.cpus = 2
     end
-    client1.vm.provision "shell", inline: $centos_client_setupscript, env: {"FILEBEATVERSION"=>"5.4.0", "ELASTICSEARCHVERSION"=>"5.4.0", "LOGSTASHVERSION"=>"5.4.0", "KIBANAVERSION"=>"5.4.0"}
+    client1.vm.provision "shell", inline: $centos_client_setupscript, env: {"FILEBEATVERSION"=>"6.2.1", "ELASTICSEARCHVERSION"=>"6.2.1", "LOGSTASHVERSION"=>"6.2.1", "KIBANAVERSION"=>"6.2.1"}
 
   end
 
@@ -388,7 +388,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        vb.memory = 1024
        vb.cpus = 2
     end
-    client2.vm.provision "shell", inline: $ubuntu_client_setupscript, env: {"FILEBEATVERSION"=>"5.4.0", "ELASTICSEARCHVERSION"=>"5.4.0", "LOGSTASHVERSION"=>"5.4.0", "KIBANAVERSION"=>"5.4.0"}
+    client2.vm.provision "shell", inline: $ubuntu_client_setupscript, env: {"FILEBEATVERSION"=>"6.2.1", "ELASTICSEARCHVERSION"=>"6.2.1", "LOGSTASHVERSION"=>"6.2.1", "KIBANAVERSION"=>"6.2.1"}
   end
 
 end
