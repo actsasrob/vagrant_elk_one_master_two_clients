@@ -17,9 +17,10 @@ To use this project:
    * ubuntu: sudo apt-get install openssh-sftp-server
    * rhel:   sudo yum install openssh-sftp-server
 
-1. Install vagrant CentOS7 box
+1. Install vagrant boxes
 
-   vagrant box add centos/7
+   vagrant box add centos/7  
+   vagrant box add ubuntu/xenial64
 
 1. Launch VMs  
 
