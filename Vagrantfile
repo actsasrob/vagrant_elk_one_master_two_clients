@@ -58,6 +58,8 @@ output.logstash:\\
   template.overwrite: false' /etc/filebeat/filebeat.yml
   fi
 
+  sed -i 's/^\\([[:space:]]*\\)enabled: false/\\1enabled: true/' /etc/filebeat/filebeat.yml 
+
   systemctl enable filebeat
   systemctl start filebeat
 END
@@ -115,6 +117,8 @@ output.logstash:\\
   template.path: "filebeat.template.json"\\
   template.overwrite: false' /etc/filebeat/filebeat.yml
   fi
+
+  sed -i 's/^\\([[:space:]]*\\)enabled: false/\\1enabled: true/' /etc/filebeat/filebeat.yml 
 
   systemctl enable filebeat
   systemctl start filebeat
