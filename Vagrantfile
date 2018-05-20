@@ -5,8 +5,62 @@
 VAGRANTFILE_API_VERSION = "2"
 Vagrant.require_version ">= 1.5.2"
 
-$ubuntu_setupscript = <<END
-  echo 'done.'
+$ubuntu_client_setupscript = <<END
+  set -x
+  # Credit to: https://www.howtoforge.com/tutorial/how-to-install-elastic-stack-on-centos-7/
+
+  # Hardlock domain name
+  echo 'supercede domain-name "co";' > /etc/dhcp/dhclient.conf
+
+  apt-get install -y wget net-tools
+
+  mkdir -p /etc/pki/tls/certs/
+  cp /vagrant/logstash-forwarder.crt /etc/pki/tls/certs/
+  chmod 644 /etc/pki/tls/certs/logstash-forwarder.crt
+  chown root:root /etc/pki/tls/certs/logstash-forwarder.crt
+
+  FILEBEATVERSION=5.4.0
+  echo "info: Install filebeat version ${FILEBEATVERSION}..."
+
+  if [ ! -f /etc/filebeat/filebeat.yml ]; then
+     wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+     wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEATVERSION}-amd64.deb
+     dpkg -i filebeat-${FILEBEATVERSION}-amd64.deb
+     if [ ! -f /etc/filebeat/filebeat.yml ]; then
+        echo "error: filebeat not installed"
+        exit 1
+     fi
+  else
+     echo "info: filebeat already installed."
+  fi
+
+  grep '/var/log/syslog' /etc/filebeat/filebeat.yml > /dev/null 2>&1
+  if [ "$?" -ne 0 ]; then
+    sed -i '/paths:/a\\
+    - /var/log/auth.log\\
+    - /var/log/syslog' /etc/filebeat/filebeat.yml 
+  fi
+
+  sed -i '/var.log.\\*.log/d' /etc/filebeat/filebeat.yml
+
+  sed -i 's/^output.elasticsearch:/#output.elasticsearch:/' /etc/filebeat/filebeat.yml
+  sed -i 's/^\\([[:space:]]*hosts: \\["localhost:9200"]\\)/#\\1/' /etc/filebeat/filebeat.yml
+
+  grep "^output.logstash:" /etc/filebeat/filebeat.yml > /dev/null 2>&1
+  if [ "$?" -ne 0 ]; then
+  sed -i '/^#output.logstash:.*/i\\
+output.logstash:\\
+  # The Logstash hosts\\
+  hosts: ["192.168.250.21:5443"]\\
+  bulk_max_size: 1024\\
+  ssl.certificate_authorities: ["/etc/pki/tls/certs/logstash-forwarder.crt"]\\
+  template.name: "filebeat"\\
+  template.path: "filebeat.template.json"\\
+  template.overwrite: false' /etc/filebeat/filebeat.yml
+  fi
+
+  systemctl enable filebeat
+  systemctl start filebeat
 END
 
 # Copy files into place
@@ -46,7 +100,7 @@ $centos_client_setupscript = <<END
     - /var/log/messages' /etc/filebeat/filebeat.yml
   fi
 
-  sed -i '/var.log.\*.log/d' /etc/filebeat/filebeat.yml
+  sed -i '/var.log.\\*.log/d' /etc/filebeat/filebeat.yml
 
   sed -i 's/^output.elasticsearch:/#output.elasticsearch:/' /etc/filebeat/filebeat.yml
   sed -i 's/^\\([[:space:]]*hosts: \\["localhost:9200"]\\)/#\\1/' /etc/filebeat/filebeat.yml
@@ -298,18 +352,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #       rhel:   sudo yum install openssh-sftp-server
   #
   config.vm.synced_folder ".", "/vagrant", type: "sshfs"
-  #config.vm.provider "virtualbox"
   config.vm.box = "centos/7"
-  #config.vm.box = "ubuntu/xenial64"
-  #config.vm.box = "ubuntu/yakkety64"
   config.vm.provider :virtualbox do |vb|
-    #vb.customize ["modifyvm", :id, "--memory", 4096]
-    #vb.customize ["modifyvm", :id, "--cpus", 2]
     vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
   end
 
-  # clients
+  # Configure the master 
   config.vm.define "master", primary: true do |master|
     master.vm.box = "centos/7"
     master.vm.hostname = "elkstack.co"
@@ -321,6 +370,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     master.vm.provision "shell", inline: $centos_master_setupscript
   end
 
+  # Configure the CentOS7 client
   config.vm.define "client1", primary: true do |client1|
     client1.vm.box = "centos/7"
     client1.vm.hostname = "client1.co"
@@ -332,17 +382,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     client1.vm.provision "shell", inline: $centos_client_setupscript
   end
 
-  #config.vm.define "clientubuntu", primary: true do |client|
-  #  client.vm.box = "ubuntu/xenial64"
-  #  client.vm.hostname = "client01.example.com"
-  #  client.vm.network :private_network, ip: "192.168.250.11"
-  #  client.vm.provision "shell", inline: $ubuntu_setupscript_example_5_8
-  #end
-
-  #config.vm.define "clientcentos", primary: true do |client|
-  #  client.vm.hostname = "client02.example.com"
-  #  client.vm.network :private_network, ip: "192.168.250.10"
-  #  client.vm.provision "shell", inline: $centos_setupscript
-  #end
+  # Configure the Ubuntu 16.04 client
+  config.vm.define "client2", primary: true do |client2|
+    client2.vm.box = "ubuntu/xenial64"
+    client2.vm.hostname = "client2.co"
+    client2.vm.network :private_network, ip: "192.168.250.23"
+    client2.vm.provider :virtualbox do |vb|
+       vb.memory = 1024
+       vb.cpus = 2
+    end
+    client2.vm.provision "shell", inline: $ubuntu_client_setupscript
+  end
 
 end
