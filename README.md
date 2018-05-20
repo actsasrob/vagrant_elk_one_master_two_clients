@@ -13,9 +13,9 @@ To use this project:
 
    sudo vagrant plugin install vagrant-sshfs  
 
-   You will need an SFTP server to use the vagrant-sshfs plugin  
-      ubuntu: sudo apt-get install openssh-sftp-server
-      rhel:   sudo yum install openssh-sftp-server
+   You will need an SFTP server to use the vagrant-sshfs plugin
+   * ubuntu: sudo apt-get install openssh-sftp-server
+   * rhel:   sudo yum install openssh-sftp-server
 
 1. Install vagrant CentOS7 box
 
